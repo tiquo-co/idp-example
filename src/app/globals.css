@@ -69,6 +69,14 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* Tailwind v4 resets buttons to the default cursor. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
 /* Content arrives in small staggered steps; set --delay per element. */
 @keyframes rise {
   from {
