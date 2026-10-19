@@ -1,7 +1,7 @@
 import { BadgeCheck, Mail, RefreshCw } from "lucide-react";
 
 import { SignInButton } from "@/components/auth-buttons";
-import { Card, Eyebrow, buttonStyles, rise } from "@/components/ui";
+import { Card, Eyebrow, rise } from "@/components/ui";
 
 const features = [
   {
@@ -46,11 +46,8 @@ export function SignedOutHero({ sessionEnded }: { sessionEnded: boolean }) {
             Your session has ended. Please sign in again.
           </p>
         )}
-        <div {...rise(3)} className="rise flex flex-wrap items-center gap-3">
+        <div {...rise(3)} className="rise">
           <SignInButton />
-          <a href="#how-it-works" className={buttonStyles.secondary}>
-            How it works
-          </a>
         </div>
       </section>
 
@@ -66,7 +63,7 @@ export function SignedOutHero({ sessionEnded }: { sessionEnded: boolean }) {
         ))}
       </section>
 
-      <section id="how-it-works" {...rise(7)} className="rise scroll-mt-24 space-y-4">
+      <section {...rise(7)} className="rise space-y-4">
         <h2 className="text-lg font-semibold tracking-tight">How it works</h2>
         <Card className="p-2">
           <ol className="divide-y divide-border">
