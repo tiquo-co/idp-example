@@ -1,48 +1,60 @@
+import { BadgeCheck, CalendarDays, CircleDashed } from "lucide-react";
+
+import { Card, Pill } from "@/components/ui";
 import type { TiquoMembershipClaim } from "@/lib/tiquo";
 import { formatDate, humanize } from "@/lib/session";
 
 export function ActiveMembershipBadge({ active }: { active: boolean }) {
   return active ? (
-    <span className="rounded-full bg-success-surface px-2.5 py-1 text-xs font-medium text-success">
+    <Pill tone="success">
+      <BadgeCheck aria-hidden="true" className="size-3.5" />
       Active member
-    </span>
+    </Pill>
   ) : (
-    <span className="rounded-full bg-warning-surface px-2.5 py-1 text-xs font-medium text-warning">
+    <Pill tone="warning">
+      <CircleDashed aria-hidden="true" className="size-3.5" />
       No active membership
-    </span>
+    </Pill>
   );
+}
+
+export function SourcePill({ source }: { source: "tiquo" | "hubspot" }) {
+  return source === "tiquo" ? <Pill tone="brand">Tiquo</Pill> : <Pill>HubSpot</Pill>;
 }
 
 /** Current memberships from the `memberships` token claim (times in seconds). */
 export function MembershipClaimsList({ memberships }: { memberships: TiquoMembershipClaim[] }) {
   if (memberships.length === 0) {
-    return <p className="text-sm text-muted">No current memberships.</p>;
+    return (
+      <Card className="flex items-center gap-3 p-5 text-sm text-muted">
+        <CircleDashed aria-hidden="true" className="size-4 shrink-0" />
+        No current memberships.
+      </Card>
+    );
   }
   return (
-    <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+    <ul className="grid gap-3 sm:grid-cols-2">
       {memberships.map((membership) => {
         const renews = formatDate(membership.renews_at && membership.renews_at * 1000);
         const ends = formatDate(membership.ends_at && membership.ends_at * 1000);
         return (
-          <li key={membership.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
-            <div className="min-w-0">
-              <p className="font-medium break-words">{membership.name}</p>
-              <p className="mt-1 text-sm text-muted">
-                Since {formatDate(membership.starts_at * 1000)}
-                {renews ? ` · renews ${renews}` : ends ? ` · ends ${ends}` : ""}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full border border-border px-2 py-0.5">{humanize(membership.status)}</span>
-              {membership.payment_status && (
-                <span className="rounded-full border border-border px-2 py-0.5">
-                  Payment: {humanize(membership.payment_status)}
+          <li key={membership.id}>
+            <Card className="flex h-full flex-col gap-4 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium text-pretty break-words">{membership.name}</p>
+                <SourcePill source={membership.source} />
+              </div>
+              <div className="mt-auto flex flex-wrap items-center gap-2">
+                <Pill tone={membership.payment_status === "past_due" ? "warning" : "success"}>
+                  {membership.payment_status === "past_due" ? "Payment past due" : humanize(membership.status)}
+                </Pill>
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted tabular-nums">
+                  <CalendarDays aria-hidden="true" className="size-3.5" />
+                  Since {formatDate(membership.starts_at * 1000)}
+                  {renews ? ` · renews ${renews}` : ends ? ` · ends ${ends}` : ""}
                 </span>
-              )}
-              <span className="rounded-full border border-border px-2 py-0.5 text-muted">
-                {membership.source === "tiquo" ? "Tiquo" : "HubSpot"}
-              </span>
-            </div>
+              </div>
+            </Card>
           </li>
         );
       })}

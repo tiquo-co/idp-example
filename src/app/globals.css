@@ -1,17 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
-  --foreground: #171717;
-  --muted: #6b6b6b;
+  --background: #f7f7f5;
+  --foreground: #161616;
+  --muted: #6e6e6a;
   --card: #ffffff;
-  --border: #e5e5e5;
-  --accent: #171717;
+  --border: rgb(22 22 22 / 0.08);
+  --accent: #161616;
   --accent-foreground: #ffffff;
-  --success: #15803d;
-  --success-surface: #dcfce7;
-  --warning: #a16207;
-  --warning-surface: #fef9c3;
+  --brand: #2563eb;
+  --brand-soft: rgb(37 99 235 / 0.08);
+  --success: #157f3c;
+  --success-soft: rgb(21 127 60 / 0.1);
+  --warning: #9a6200;
+  --warning-soft: rgb(202 138 4 / 0.12);
+  /* Layered shadows read as depth on any background; borders do not. */
+  --shadow-card: 0 0 0 1px rgb(22 22 22 / 0.06), 0 1px 2px rgb(22 22 22 / 0.04),
+    0 4px 12px -2px rgb(22 22 22 / 0.05);
+  --shadow-raised: 0 0 0 1px rgb(22 22 22 / 0.06), 0 2px 4px rgb(22 22 22 / 0.05),
+    0 12px 32px -8px rgb(22 22 22 / 0.12);
+  --glow: radial-gradient(60rem 28rem at 50% -8rem, rgb(37 99 235 / 0.1), transparent 70%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0b0c;
+    --foreground: #ededec;
+    --muted: #9a9a96;
+    --card: #141415;
+    --border: rgb(255 255 255 / 0.08);
+    --accent: #ededec;
+    --accent-foreground: #0b0b0c;
+    --brand: #7aa2ff;
+    --brand-soft: rgb(122 162 255 / 0.12);
+    --success: #5ad48a;
+    --success-soft: rgb(90 212 138 / 0.12);
+    --warning: #f2c14e;
+    --warning-soft: rgb(242 193 78 / 0.12);
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.04),
+      0 4px 12px -2px rgb(0 0 0 / 0.4);
+    --shadow-raised: 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.05),
+      0 12px 32px -8px rgb(0 0 0 / 0.6);
+    --glow: radial-gradient(60rem 28rem at 50% -8rem, rgb(122 162 255 / 0.14), transparent 70%);
+  }
 }
 
 @theme inline {
@@ -22,32 +53,39 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
   --color-success: var(--success);
-  --color-success-surface: var(--success-surface);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
-  --color-warning-surface: var(--warning-surface);
+  --color-warning-soft: var(--warning-soft);
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #a1a1a1;
-    --card: #141414;
-    --border: #262626;
-    --accent: #ededed;
-    --accent-foreground: #0a0a0a;
-    --success: #4ade80;
-    --success-surface: #14532d;
-    --warning: #facc15;
-    --warning-surface: #422006;
+body {
+  background: var(--glow) no-repeat, var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Content arrives in small staggered steps; set --delay per element. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+.rise {
+  animation: rise 420ms cubic-bezier(0.2, 0, 0, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
 }

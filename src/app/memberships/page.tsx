@@ -1,7 +1,11 @@
+import { CalendarDays, CircleAlert, CircleDashed, Layers } from "lucide-react";
 import { Suspense } from "react";
 
 import { SignInButton } from "@/components/auth-buttons";
+import { SourcePill } from "@/components/membership-claims";
 import { PageLoading } from "@/components/page-loading";
+import { Notice } from "@/components/signed-out-notice";
+import { Card, Eyebrow, Pill, rise } from "@/components/ui";
 import { fetchTiquoMemberships, type TiquoApiMembership } from "@/lib/tiquo";
 import { formatDate, getSignedInSession, humanize } from "@/lib/session";
 
@@ -11,7 +15,12 @@ function formatPrice(membership: TiquoApiMembership) {
     style: "currency",
     currency: membership.currency,
   }).format(membership.price / 100);
-  return membership.billingPeriod ? `${amount} · ${humanize(membership.billingPeriod)}` : amount;
+  return membership.billingPeriod ? `${amount} / ${humanize(membership.billingPeriod).toLowerCase()}` : amount;
+}
+
+function statusTone(membership: TiquoApiMembership) {
+  if (membership.paymentStatus === "past_due") return "warning" as const;
+  return membership.isCurrent ? ("success" as const) : ("neutral" as const);
 }
 
 // Calls the Tiquo customer API with the IDP access token. Unlike the token
@@ -21,11 +30,9 @@ async function MembershipsPageContent() {
   const session = await getSignedInSession();
   if (!session?.accessToken) {
     return (
-      <section className="space-y-4">
-        <h1 className="text-2xl font-semibold">Memberships</h1>
-        <p className="text-muted">Sign in to see your memberships.</p>
-        <SignInButton />
-      </section>
+      <Notice icon={Layers} title="Memberships" action={<SignInButton />}>
+        Sign in with your club account to see your memberships.
+      </Notice>
     );
   }
 
@@ -38,52 +45,59 @@ async function MembershipsPageContent() {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Memberships</h1>
-        <p className="text-sm text-muted text-pretty">
-          From <code className="font-mono">GET /api/client/v1/memberships</code> on the Tiquo customer
-          API, called with the access token. Memberships from a connected system such as HubSpot are
-          read-only and may have no price.
+    <div className="space-y-8">
+      <header {...rise(0)} className="rise space-y-2">
+        <Eyebrow>Customer API</Eyebrow>
+        <h1 className="text-3xl font-semibold tracking-tight">Memberships</h1>
+        <p className="max-w-2xl text-sm text-muted text-pretty">
+          From <code className="font-mono text-foreground">GET /api/client/v1/memberships</code>, called with the
+          access token. Memberships from a connected system such as HubSpot are read-only and may have no price.
         </p>
-      </div>
+      </header>
 
       {error ? (
-        <p role="alert" className="rounded-lg bg-warning-surface px-4 py-3 text-sm text-warning">
+        <Card {...rise(1)} className="rise flex items-center gap-3 p-5 text-sm text-warning">
+          <CircleAlert aria-hidden="true" className="size-4 shrink-0" />
           {error}
-        </p>
+        </Card>
       ) : memberships.length === 0 ? (
-        <p className="text-sm text-muted">No memberships yet.</p>
+        <Card {...rise(1)} className="rise flex items-center gap-3 p-5 text-sm text-muted">
+          <CircleDashed aria-hidden="true" className="size-4 shrink-0" />
+          No memberships yet.
+        </Card>
       ) : (
-        <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-          {memberships.map((membership) => {
-            const price = formatPrice(membership);
-            const renews = formatDate(membership.renewalDate);
-            const ends = formatDate(membership.endDate);
-            return (
-              <li key={membership.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
-                <div className="min-w-0">
-                  <p className="font-medium break-words">{membership.name}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    Since {formatDate(membership.startDate)}
-                    {renews ? ` · renews ${renews}` : ends ? ` · ends ${ends}` : ""}
-                    {price ? ` · ${price}` : ""}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full border border-border px-2 py-0.5">{humanize(membership.status)}</span>
-                  {membership.isExternal && (
-                    <span className="rounded-full border border-border px-2 py-0.5 text-muted">
-                      Managed in {membership.source === "hubspot" ? "HubSpot" : "another system"}
-                    </span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <Card {...rise(1)} className="rise p-2">
+          <ul className="divide-y divide-border">
+            {memberships.map((membership) => {
+              const price = formatPrice(membership);
+              const renews = formatDate(membership.renewalDate);
+              const ends = formatDate(membership.endDate);
+              return (
+                <li key={membership.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-3 py-4">
+                  <div className="min-w-0 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-pretty break-words">{membership.name}</p>
+                      <SourcePill source={membership.source} />
+                    </div>
+                    <p className="flex items-center gap-1.5 text-xs text-muted tabular-nums">
+                      <CalendarDays aria-hidden="true" className="size-3.5" />
+                      Since {formatDate(membership.startDate)}
+                      {renews ? ` · renews ${renews}` : ends ? ` · ended ${ends}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {price && <span className="text-sm font-medium tabular-nums">{price}</span>}
+                    <Pill tone={statusTone(membership)}>
+                      {membership.paymentStatus === "past_due" ? "Payment past due" : humanize(membership.status)}
+                    </Pill>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
       )}
-    </section>
+    </div>
   );
 }
 
