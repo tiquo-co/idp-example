@@ -39,8 +39,11 @@ type TiquoProfile = {
 };
 
 // The Tiquo IDP as a standard OpenID Connect provider. Auth.js reads the
-// endpoints from the issuer's discovery document, and validates the ID token
-// (signature, issuer, audience, nonce) against Tiquo's JWKS.
+// endpoints from the issuer's discovery document and checks the ID token's
+// issuer, audience, expiry and nonce. It does not check the signature: the
+// token comes straight from Tiquo's token endpoint over HTTPS, which OIDC
+// Core 3.1.3.7 allows in place of signature validation, so Tiquo's signing-key
+// rotation never affects this app.
 const tiquo: OIDCConfig<TiquoProfile> = {
   id: "tiquo",
   name: "Tiquo",

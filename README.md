@@ -6,7 +6,7 @@ What it shows:
 
 | Feature | Where |
 | --- | --- |
-| Tiquo as a custom OIDC provider (PKCE, state and nonce checks, ID token verified against Tiquo's JWKS) | [`src/auth.ts`](src/auth.ts) |
+| Tiquo as a custom OIDC provider (PKCE, state and nonce checks; ID token issuer, audience, expiry and nonce validated) | [`src/auth.ts`](src/auth.ts) |
 | Customer and membership claims: `org_customer_id`, `customer_number`, `memberships`, `has_active_membership` | [`src/app/page.tsx`](src/app/page.tsx) |
 | A members-only area gated on `has_active_membership` | [`src/app/members/page.tsx`](src/app/members/page.tsx) |
 | Calling the Tiquo customer API with the access token | [`src/app/memberships/page.tsx`](src/app/memberships/page.tsx) |
@@ -50,4 +50,5 @@ On Vercel, add the same four variables under **Project Settings > Environment Va
 - **Membership claims.** `memberships` lists current memberships, at most 10. Each has `id`, `source` (`tiquo` or `hubspot`), `plan_id` (Tiquo only), `name`, `status`, `payment_status` and `starts_at`/`renews_at`/`ends_at` (seconds). `has_active_membership` is `true` while any is current. A HubSpot membership with an unpaid invoice stays active until HubSpot marks it cancelled.
 - **Refresh.** Access tokens last an hour, and each refresh re-reads memberships from Tiquo. The proxy refreshes on page requests so the rotated refresh token is saved in the cookie, because Server Components cannot write cookies.
 - **Sign-out.** The app clears its session and revokes the refresh token (`/api/auth/oauth2/revoke`). It then redirects to Tiquo's end-session endpoint, so the next sign-in asks for a new code. The return address must be on the same origin as one of the client's redirect URIs.
+- **Signing keys (JWKS).** Tiquo signs tokens with keys published at `jwks_uri` (`https://edge.tiquo.app/api/auth/jwks`) and rotates them every 90 days. A retired key stays published for a week. This app gets its tokens directly from the token endpoint over HTTPS, so it trusts them without checking signatures, as OIDC allows, and never uses the JWKS. Any code that receives a Tiquo token another way must verify it against the JWKS, for example your own API receiving an access token from a mobile app. Standard JWT libraries fetch the keys from `jwks_uri` and pick the one named by the token's `kid`.
 - **Access token in the session.** The session includes the access token so server code can call the customer API. Auth.js also returns the session to the signed-in user's browser at `/api/auth/session`. The token only grants access to that member's own data, as with the Tiquo DOM package.
