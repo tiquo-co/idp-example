@@ -1,4 +1,4 @@
-import { Lock, Sparkles, UserRound } from "lucide-react";
+import { Lock, UserRound } from "lucide-react";
 import { Suspense } from "react";
 
 import { SignInButton } from "@/components/auth-buttons";
@@ -41,10 +41,7 @@ async function MembersPageContent() {
         />
         <div className="relative space-y-3">
           <Eyebrow>Members area</Eyebrow>
-          <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight text-balance">
-            Welcome in
-            <Sparkles aria-hidden="true" className="size-6 text-brand" />
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-balance">Welcome</h1>
           <p className="max-w-xl text-muted text-pretty">
             You can see this because your token says <code className="font-mono text-foreground">has_active_membership: true</code>.
           </p>
